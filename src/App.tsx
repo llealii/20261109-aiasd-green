@@ -34,6 +34,16 @@ export function App({ store }: Props) {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setFeedback(null);
+    if (loadState !== 'ready') {
+      setFeedback({
+        kind: 'error',
+        message:
+          loadState === 'error'
+            ? 'Saved tasks could not be loaded. Reload the page before saving.'
+            : 'Tasks are still loading. Please wait before saving.',
+      });
+      return;
+    }
     const found = validateTaskInput({ title, dueDate });
     const dateInput = event.currentTarget.querySelector<HTMLInputElement>('#task-due');
     if (dateInput?.validity.badInput) {
@@ -109,7 +119,7 @@ export function App({ store }: Props) {
       <section aria-labelledby="list-heading">
         <h2 id="list-heading">Your tasks</h2>
         {loadState === 'loading' && <p role="status">Loading tasks…</p>}
-        {loadState === 'error' && <p role="alert" className="error">Saved tasks could not be loaded. Reload the page to try again.</p>}
+        {loadState === 'error' && <p role="alert" className="error">Saved tasks could not be loaded. Reload the page before saving.</p>}
         {loadState === 'ready' && tasks.length === 0 && <p>No tasks yet. Add your first task above.</p>}
         {loadState === 'ready' && tasks.length > 0 && (
           <ul>

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { IDBFactory } from 'fake-indexeddb';
 import { App } from './App';
@@ -49,7 +49,22 @@ it('rejects whitespace-only titles (AC-003)', async () => {
   render(<App store={store} />);
   await screen.findByText(/No tasks yet/);
   await add('   ');
-  expect(await screen.findByText('Title is required.')).toBeInTheDocument();
+  expect(
+    await within(screen.getByRole('form', { name: 'Capture a task' })).findByRole('alert'),
+  ).toHaveTextContent('Title is required.');
+  expect(await store.list()).toHaveLength(0);
+});
+
+it('rejects native invalid date input without saving (AC-009)', async () => {
+  const store = createIndexedDbTaskStore();
+  render(<App store={store} />);
+  await screen.findByText(/No tasks yet/);
+  const input = screen.getByLabelText(/Due date/) as HTMLInputElement;
+  Object.defineProperty(input, 'validity', { configurable: true, value: { badInput: true } });
+  await add('Invalid date');
+  expect(within(screen.getByRole('form', { name: 'Capture a task' })).getByRole('alert')).toHaveTextContent(
+    'Due date must be a valid calendar date.',
+  );
   expect(await store.list()).toHaveLength(0);
 });
 
@@ -62,6 +77,50 @@ it('rejects an impossible date (AC-009)', async () => {
   const { validateTaskInput } = await import('./task');
   expect(validateTaskInput({ title: 'x', dueDate: '2026-02-30' }).dueDate).toMatch(/valid calendar date/);
   expect(input).toBeInTheDocument();
+});
+
+it('keeps form inputs disabled until a pending save completes', async () => {
+  let finishSave!: () => void;
+  const store: TaskStore = {
+    list: async () => [],
+    add: () => new Promise<void>((resolve) => {
+      finishSave = resolve;
+    }),
+  };
+  render(<App store={store} />);
+  await screen.findByText(/No tasks yet/);
+  const user = userEvent.setup();
+  const title = screen.getByLabelText('Title');
+  const dueDate = screen.getByLabelText(/Due date/);
+  await user.type(title, 'Pending task');
+  await user.click(screen.getByRole('button', { name: 'Save task' }));
+  expect(title).toBeDisabled();
+  expect(dueDate).toBeDisabled();
+  await act(async () => finishSave());
+  expect(await screen.findByText('Task saved.')).toBeInTheDocument();
+  expect(title).toHaveValue('');
+});
+
+it('does not save after the initial task load fails', async () => {
+  let addCount = 0;
+  const store: TaskStore = {
+    list: async () => {
+      throw new Error('unavailable');
+    },
+    add: async () => {
+      addCount += 1;
+    },
+  };
+  render(<App store={store} />);
+  expect(await screen.findByRole('alert')).toHaveTextContent(/reload/i);
+  const user = userEvent.setup();
+  await user.type(screen.getByLabelText('Title'), 'Keep this draft');
+  expect(screen.getByRole('button', { name: 'Save task' })).toBeDisabled();
+  const form = screen.getByRole('form', { name: 'Capture a task' });
+  fireEvent.submit(form);
+  expect(within(form).getByRole('alert')).toHaveTextContent(/reload the page before saving/i);
+  expect(screen.getByLabelText('Title')).toHaveValue('Keep this draft');
+  expect(addCount).toBe(0);
 });
 
 it('keeps saved tasks after reopening (AC-005)', async () => {
