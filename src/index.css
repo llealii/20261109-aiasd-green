@@ -1,0 +1,39 @@
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+form > div {
+  margin-bottom: 0.75rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+}
+
+input,
+button {
+  font: inherit;
+  padding: 0.4rem;
+}
+
+:focus-visible {
+  outline: 3px solid #1a56db;
+  outline-offset: 2px;
+}
+
+.error {
+  color: #b00020;
+  font-weight: 600;
+}
+
+.saved {
+  color: #0b6b2e;
+}
