@@ -70,6 +70,7 @@ export function App({ store }: Props) {
             id="task-title"
             type="text"
             value={title}
+            disabled={saving}
             onChange={(e) => setTitle(e.target.value)}
             aria-invalid={errors.title ? true : undefined}
             aria-describedby={errors.title ? 'title-error' : undefined}
@@ -86,6 +87,7 @@ export function App({ store }: Props) {
             id="task-due"
             type="date"
             value={dueDate}
+            disabled={saving}
             onChange={(e) => setDueDate(e.target.value)}
             aria-invalid={errors.dueDate ? true : undefined}
             aria-describedby={errors.dueDate ? 'due-error' : undefined}
