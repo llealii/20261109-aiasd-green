@@ -98,7 +98,7 @@ export function App({ store }: Props) {
             </p>
           )}
         </div>
-        <button type="submit" disabled={saving}>
+        <button type="submit" disabled={saving || loadState !== 'ready'}>
           Save task
         </button>
         <div role={feedback?.kind === 'error' ? 'alert' : 'status'} className={feedback?.kind ?? ''}>
@@ -109,7 +109,7 @@ export function App({ store }: Props) {
       <section aria-labelledby="list-heading">
         <h2 id="list-heading">Your tasks</h2>
         {loadState === 'loading' && <p role="status">Loading tasks…</p>}
-        {loadState === 'error' && <p role="alert" className="error">Saved tasks could not be loaded.</p>}
+        {loadState === 'error' && <p role="alert" className="error">Saved tasks could not be loaded. Reload the page to try again.</p>}
         {loadState === 'ready' && tasks.length === 0 && <p>No tasks yet. Add your first task above.</p>}
         {loadState === 'ready' && tasks.length > 0 && (
           <ul>
