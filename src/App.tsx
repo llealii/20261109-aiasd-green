@@ -35,6 +35,10 @@ export function App({ store }: Props) {
     event.preventDefault();
     setFeedback(null);
     const found = validateTaskInput({ title, dueDate });
+    const dateInput = event.currentTarget.querySelector<HTMLInputElement>('#task-due');
+    if (dateInput?.validity.badInput) {
+      found.dueDate = 'Due date must be a valid calendar date.';
+    }
     setErrors(found);
     if (found.title || found.dueDate) return;
     const task = buildTask({ title, dueDate });
