@@ -35,3 +35,10 @@ revisions:
 ## Implementation specifications
 
 - [SL-001: Capture and reopen a task](specs/task-manager/SL-001-capture-and-reopen.spec.md) - Approved implementation boundary and acceptance checks for the first task-management slice.
+
+## Running the app (SL-001)
+
+Browser-only React/TypeScript app storing tasks in IndexedDB; no backend.
+
+- `npm install`, then `npm run dev` to start, `npm test` to run tests, `npm run build` to type-check and build.
+- Tasks persist per browser profile and origin. Use the same profile and origin (for example `http://localhost:5173`) when reopening. Record the supported browser/device and origin before the real reopen check (AC-005).
