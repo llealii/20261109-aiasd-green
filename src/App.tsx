@@ -40,7 +40,10 @@ export function App({ store }: Props) {
       found.dueDate = 'Due date must be a valid calendar date.';
     }
     setErrors(found);
-    if (found.title || found.dueDate) return;
+    if (found.title || found.dueDate) {
+      setFeedback({ kind: 'error', message: [found.title, found.dueDate].filter(Boolean).join(' ') });
+      return;
+    }
     const task = buildTask({ title, dueDate });
     setSaving(true);
     try {
